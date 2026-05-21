@@ -1,0 +1,100 @@
+{
+  "entities": {
+    "profile": {
+      "title": "User Profile",
+      "description": "User profile with identification and API credentials",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Unique email address of the user"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the user"
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "Profile picture URL"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of profile creation"
+        },
+        "apiKey": {
+          "type": "string",
+          "description": "Secret, unique API key used for backend and external bot automation"
+        }
+      },
+      "required": ["email", "name", "createdAt", "apiKey"]
+    },
+    "balance": {
+      "title": "User Balance",
+      "description": "The current amount of AlphaCoin that the user owns",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Uniquely identifies the user owning this balance"
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Target balance amount in AlphaCoin, starts at 100 as sign-on bonus"
+        }
+      },
+      "required": ["userId", "amount"]
+    },
+    "transaction": {
+      "title": "Transaction Log",
+      "description": "A recorded transfer of AlphaCoin coins between players or systems",
+      "type": "object",
+      "properties": {
+        "fromUserId": {
+          "type": "string",
+          "description": "The sender's user ID. Null if minted as system reward."
+        },
+        "toUserId": {
+          "type": "string",
+          "description": "The recipient's user ID."
+        },
+        "fromEmail": {
+          "type": "string",
+          "description": "The sender's email."
+        },
+        "toEmail": {
+          "type": "string",
+          "description": "The recipient's email."
+        },
+        "amount": {
+          "type": "integer",
+          "description": "Amount transferred"
+        },
+        "reason": {
+          "type": "string",
+          "description": "The purpose of transaction (e.g., Reward, Game purchase, Send)"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when this transaction occurred"
+        }
+      },
+      "required": ["toUserId", "amount", "reason", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/profiles/{profileId}": {
+      "schema": "profile",
+      "description": "Stores credentials and system mapping of users"
+    },
+    "/balances/{balanceId}": {
+      "schema": "balance",
+      "description": "Contains user total points/remittance status"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "transaction",
+      "description": "A ledger of points transfers across different users"
+    }
+  }
+}

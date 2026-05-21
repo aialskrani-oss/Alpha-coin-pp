@@ -1,0 +1,6 @@
+{
+  "name": "Alpha Vault",
+  "description": "محفظة Alpha Vault لإدارة رصيد AlphaCoin وتحويل المعاملات والربط البرمجي عبر الـ API للتطبيقات وبوتات التليجرام.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

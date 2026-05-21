@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Profiles Match Block
+    match /profiles/{profileId} {
+      allow read: if isSignedIn() && request.auth.uid == profileId;
+      allow create: if isSignedIn() && request.auth.uid == profileId && isValidProfile(incoming());
+      allow update: if isSignedIn() && request.auth.uid == profileId && isValidProfile(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'avatarUrl', 'apiKey'])
+      );
+    }
+
+    // Balances Match Block
+    match /balances/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      // Initial sign-up welcome gift (100 coins)
+      allow create: if isSignedIn() && request.auth.uid == userId && incoming().userId == userId && incoming().amount == 100;
+      // Client is NOT allowed to directly update the balances (to prevent cheating)
+      allow update, delete: if false;
+    }
+
+    // Transactions Match Block
+    match /transactions/{transactionId} {
+      // Allow reading list of transactions if user was either sender or receiver
+      allow read: if isSignedIn() && (resource.data.fromUserId == request.auth.uid || resource.data.toUserId == request.auth.uid);
+      // Wait, we can allow client to record a transactional log if they are the sender, but balance transfers are handled via API
+      allow create: if isSignedIn() && incoming().fromUserId == request.auth.uid && isValidTransaction(incoming());
+    }
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidProfile(data) {
+      return data.email is string && data.email.size() <= 256
+        && data.name is string && data.name.size() <= 128
+        && data.apiKey is string && data.apiKey.size() <= 128;
+    }
+
+    function isValidTransaction(data) {
+      return data.toUserId is string && data.toUserId.size() <= 128
+        && data.fromUserId is string && data.fromUserId.size() <= 128
+        && data.toEmail is string && data.toEmail.size() <= 256
+        && data.fromEmail is string && data.fromEmail.size() <= 256
+        && data.amount is int && data.amount > 0
+        && data.reason is string && data.reason.size() <= 128;
+    }
+  }
+}
